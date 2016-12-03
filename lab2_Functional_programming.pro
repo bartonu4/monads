@@ -11,6 +11,4 @@ TEMPLATE = app
 
 SOURCES += main.cpp
 
-HEADERS += \
-    List.h \
-    StateList.h
+HEADERS +=

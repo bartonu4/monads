@@ -1,133 +1,112 @@
 #include <QCoreApplication>
-#include "StateList.h"
 #include <vector>
+#include <functional>
+#include <iostream>
 using namespace std;
-
-// select ::[a] ->[(a, [a])]
-// select[] = []
-// select(x:xs) = (x, xs) : [(y, x:ys) | (y, ys) <-select xs]
-
-
-
-
-int asNumber(vector<int> const & v)
+template<typename In, typename Out>
+class Monada;
+template<typename T>
+class myVector
 {
-    int acc = 0;
-    for (auto i : v)
+public:
+    list<T> myData;
+    static int linear_solve(list<T> vec, T find)
     {
-        acc = 10 * acc + i;
+        if(vec.size() == 0 )
+        {
+            return -1;
+        }
+
+        if(vec.front() == find)
+        {
+            return 0;
+        }
+        else
+        {
+            list<T> newVec = vec;
+            newVec.pop_front();
+            const int answer = Monada<T, int>::m_return(&newVec, find, linear_solve);
+            if(answer == -1)
+            {
+                return -1;
+            }
+            else
+            {
+                return answer + 1;
+            }
+        }
     }
-    return acc;
-}
+    static list<T> sort(list<T>  vec)
+    {
+        if(vec.size() == 1)
+        {
+            return vec;
+        }
+        pair<int,T> minimal = findSmalest(vec);
+        list<T> newList = vec;
 
+            auto iter = newList.begin();
+        for(int i = 0; i < minimal.first; i++)
+            iter++;
 
-StateList<pair<int, int>> testBind()
+        std::swap(*newList.begin(),*iter);
+        newList.pop_front();
+        auto ret= [=] (){
+                auto sorted = sort(newList);
+                sorted.push_front(minimal.second);
+                return sorted;
+        };
+        return ret();
+
+    }
+    static pair<int, int> findSmalest(const list<T> vec)
+    {
+        if(vec.size() == 1)
+        {
+            return make_pair(0, vec.front());
+        }
+        auto newVec = vec;
+        newVec.pop_front();
+        pair<int,int> answer = findSmalest(newVec);
+        if(answer.second < vec.front())
+        {
+            return make_pair(answer.first + 1, answer.second);
+        }
+        else
+        {
+            return make_pair(0, vec.front());
+        }
+    }
+};
+
+template<typename In, typename Out>
+class Monada
 {
-    StateList<int> st = &select<int>;
-    return mbind(st, [st](int x) {
-        return mbind(st, [x](int y) {
-            return mreturn(make_pair(x, y));
-        });
-    });
-}
+public:
+    static Out m_return(list<In> *input, In find, std::function<Out(list<In>, In)> f)
+    {
+        if (!input && !find)return (Out)0;
 
-StateList<int> testThen()
-{
-    return mthen(mzero<int>(), []() {
-        cout << "Ignoring\n";
-        return mreturn(42);
-    });
-}
+        return f(*input, find);
+    }
+};
 
-StateList<int> testGuard()
-{
-    StateList<int> st = &select<int>;
-    return mbind(st, [](int x) {
-        return mthen(guard(x > 2), [x]() {
-            return mreturn(x);
-        });
-    });
-
-}
-
-    //s <-StateList select
-    //e <-StateList select
-    //n <-StateList select
-    //d <-StateList select
-    //m <-StateList select
-    //o <-StateList select
-    //r <-StateList select
-    //y <-StateList select
-    //guard $ s /= 0 && m /= 0
-    //let send = asNumber[s, e, n, d]
-    //more = asNumber[m, o, r, e]
-    //money = asNumber[m, o, n, e, y]
-    //guard $ send + more == money
-    //return (send, more, money)
-
-template<class A>
-StateList<tuple<int>> solve(int find, List<A> lst)
-{
-   // StateList<int> sel = &select<int>;
-
-//    return mbind(sel, [=](int s) {
-//    return mbind(sel, [=](int e) {
-//    return mbind(sel, [=](int n) {
-//    return mbind(sel, [=](int d) {
-//    return mbind(sel, [=](int m) {
-//    return mbind(sel, [=](int o) {
-//    return mbind(sel, [=](int r) {
-//    return mbind(sel, [=](int y) {
-//        return mthen(guard(s != 0 && m != 0), [=]() {
-//            int send  = asNumber(vector<int>{s, e, n, d});
-//            int more  = asNumber(vector<int>{m, o, r, e});
-//            int money = asNumber(vector<int>{m, o, n, e, y});
-//            return mthen(guard(send + more == money), [=]() {
-//                return mreturn(make_tuple(send, more, money));
-//            });
-//        });
-//    });});});});});});});});
-
-    StateList<int> sel = &select<int>;
-    return mbind(sel, [=](int s){
-       return mthen(guard(s == find), [=]() {
-        return mreturn(make_tuple(s));
-       });
-    });
-}
-
-
-void calc(List<int> lst)
-{
-    // int a = 1;
-    forEach(lst, [=](){
-        int a = 4;
-       cout << runStateList(solve(a, lst), lst);
-    });
-}
 int main()
 {
-    List<int> lst{ 1, 5, 6, 2, 9, 4, 3, 7 };
-   //StateList<int> st = &select<int>;
-//    PairList<int> sel = runStateList(st, lst);
-//    cout << sel;
-//    cout << endl;
-//    cout << evalStateList(st, lst);
-//    cout << endl;
-//    cout << runStateList(mreturn<int>(42), lst);
-//    cout << endl;
-//    cout << evalStateList(testBind(), lst);
-//    cout << endl;
-//    cout << evalStateList(testThen(), lst);
-//    cout << endl;
-//    cout << evalStateList(testGuard(), lst);
-//    cout << endl;
-//   // cout << asNumber(lst);
-//    cout << endl;
 
-   calc(lst);
-
-   // cout << evalStateList(solve(a), lst);
-
+    myVector<int> vec;
+    vec.myData = {9, 6, 5, 7};
+   while(1)
+   {
+    cout << "Enter element: \n";
+    int a;
+    cin >> a;
+    cout << "Result : " << Monada<int, int>::m_return(&vec.myData, a, &myVector<int>::linear_solve) << endl;
+    cout << myVector<int>::findSmalest(vec.myData).first << " " << myVector<int>::findSmalest(vec.myData).second << endl;
+    auto sorted =  myVector<int>::sort(vec.myData);
+    foreach (auto el, sorted) {
+        cout<< "\t " << el;
+    }
+   }
     return 0;
 }
