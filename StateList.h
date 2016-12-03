@@ -15,7 +15,27 @@ using StateList = function<PairList<A>(State)>;
 
 // runStateList :: StateList s a -> s -> [(a, s)]
 // runStateList(StateList g) s = g s
+template<class A>
+PairList<A> select(List<A> lst)
+{
+    if (lst.isEmpty())
+        return PairList<A>();
 
+ //   A       x = lst.front();
+ //   List<A> xs = lst.popped_front();
+
+    auto result = List<pair<A, State>>();
+//    forEach(select(xs), [x, &result](pair<A, List<A>> const & p)
+//    {
+//        A       y = p.first;
+//        List<A> ys = p.second;
+//        auto y_xys = make_pair(y, ys.pushed_front(x));
+//        result = result.pushed_front(y_xys);
+//    });
+
+
+    return result.pushed_front(make_pair(lst.front(), lst));
+}
 template<class A>
 PairList<A> runStateList(StateList<A> st, State s)
 {
@@ -28,7 +48,8 @@ template<class A>
 List<A> evalStateList(StateList<A> st, State s)
 {
     return fmap([](pair<A, State> const & p)->A {
-        return p.first;
+
+        return p.second;
     }, st(s));
 }
 
@@ -106,12 +127,21 @@ std::ostream& operator<<(std::ostream& os, pair<A, S> const & p)
     return os;
 }
 
-template<class A, class B, class C>
-std::ostream& operator<<(std::ostream& os, tuple<A, B, C> const & t)
+template<class A, class B>
+std::ostream& operator<<(std::ostream& os, tuple<A, B> const & t)
 {
     os << "(";
-    os << get<0>(t) << ", " << get<1>(t) << ", " << get<2>(t);
+    os << get<0>(t) << ", " << get<1>(t);
     os << ")";
     return os;
 }
+template<class A>
+std::ostream& operator<<(std::ostream& os, tuple<A> const & t)
+{
+    os << "(";
+    os << get<0>(t) << ", ";
+    os << ")";
+    return os;
+}
+
 

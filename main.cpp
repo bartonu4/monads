@@ -7,27 +7,7 @@ using namespace std;
 // select[] = []
 // select(x:xs) = (x, xs) : [(y, x:ys) | (y, ys) <-select xs]
 
-template<class A>
-PairList<A> select(List<A> lst)
-{
-    if (lst.isEmpty())
-        return PairList<A>();
 
- //   A       x = lst.front();
- //   List<A> xs = lst.popped_front();
-
-    auto result = List<pair<A, State>>();
-//    forEach(select(xs), [x, &result](pair<A, List<A>> const & p)
-//    {
-//        A       y = p.first;
-//        List<A> ys = p.second;
-//        auto y_xys = make_pair(y, ys.pushed_front(x));
-//        result = result.pushed_front(y_xys);
-//    });
-
-
-    return result.pushed_front(make_pair(lst.front(), lst));
-}
 
 
 int asNumber(vector<int> const & v)
@@ -85,8 +65,8 @@ StateList<int> testGuard()
     //guard $ send + more == money
     //return (send, more, money)
 
-
-StateList<tuple<int, int, int>> solve()
+template<class A>
+StateList<tuple<int>> solve(int find, List<A> lst)
 {
    // StateList<int> sel = &select<int>;
 
@@ -107,21 +87,28 @@ StateList<tuple<int, int, int>> solve()
 //            });
 //        });
 //    });});});});});});});});
+
     StateList<int> sel = &select<int>;
     return mbind(sel, [=](int s){
-       return mthen(guard(true), [=]() {
-        return mreturn(make_tuple(1,2,3));
+       return mthen(guard(s == find), [=]() {
+        return mreturn(make_tuple(s));
        });
     });
 }
 
 
-
+void calc(List<int> lst)
+{
+    // int a = 1;
+    forEach(lst, [=](){
+        int a = 4;
+       cout << runStateList(solve(a, lst), lst);
+    });
+}
 int main()
 {
     List<int> lst{ 1, 5, 6, 2, 9, 4, 3, 7 };
-
-//    StateList<int> st = &select<int>;
+   //StateList<int> st = &select<int>;
 //    PairList<int> sel = runStateList(st, lst);
 //    cout << sel;
 //    cout << endl;
@@ -138,6 +125,9 @@ int main()
 //   // cout << asNumber(lst);
 //    cout << endl;
 
-    cout << evalStateList(solve(), lst);
+   calc(lst);
+
+   // cout << evalStateList(solve(a), lst);
+
     return 0;
 }

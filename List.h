@@ -106,8 +106,8 @@ List<T> concatAll(List<List<T>> const & xss)
 template<class T, class F>
 void forEach(List<T> lst, F f)
 {
-    static_assert(std::is_convertible<F, std::function<void(T)>>::value,
-        "forEach requires a function type void(T)");
+//    static_assert(std::is_convertible<F, std::function<void(T)>>::value,
+//        "forEach requires a function type void(T)");
     while (!lst.isEmpty()) {
         f(lst.front());
         lst = lst.popped_front();
